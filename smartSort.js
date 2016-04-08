@@ -1,8 +1,61 @@
 ;;(function() {
-	var dir = void 0;
+	var arrHTMLElementTypes = ["HTMLAnchorElement","HTMLAreaElement","HTMLAudioElement","HTMLBRElement","HTMLBaseElement","HTMLBaseFontElement","HTMLBodyElement","HTMLButtonElement","HTMLCanvasElement","HTMLCollection","HTMLContentElement","HTMLDListElement","HTMLDataElement","HTMLDataListElement","HTMLDialogElement","HTMLDivElement","HTMLDocument","HTMLElement","HTMLEmbedElement","HTMLFieldSetElement","HTMLFormControlsCollection","HTMLFormElement","HTMLFrameSetElement","HTMLHRElement","HTMLHeadElement","HTMLHeadingElement","HTMLHtmlElement","HTMLHyperlinkElementUtils","HTMLIFrameElement","HTMLImageElement","HTMLInputElement","HTMLIsIndexElement","HTMLKeygenElement","HTMLLIElement","HTMLLabelElement","HTMLLegendElement","HTMLLinkElement","HTMLMapElement","HTMLMediaElement","HTMLMetaElement","HTMLMeterElement","HTMLModElement","HTMLOListElement","HTMLObjectElement","HTMLOptGroupElement","HTMLOptionElement","HTMLOptionsCollection","HTMLOutputElement","HTMLParagraphElement","HTMLParamElement","HTMLPictureElement","HTMLPreElement","HTMLProgressElement","HTMLQuoteElement","HTMLScriptElement","HTMLSelectElement","HTMLShadowElement","HTMLSourceElement","HTMLSpanElement","HTMLStyleElement","HTMLTableCaptionElement","HTMLTableCellElement","HTMLTableColElement","HTMLTableDataCellElement","HTMLTableElement","HTMLTableHeaderCellElement","HTMLTableRowElement","HTMLTableSectionElement","HTMLTextAreaElement","HTMLTimeElement","HTMLTitleElement","HTMLTrackElement","HTMLUListElement","HTMLUnknownElement","HTMLVideoElement"],
+		dir = void 0;
+	
+	var debug = new (function ssDebug() {
+			function debug() {
+				try {
+					if (window['console'] && console['log']) {
+						var its = debug.includeTimeStamp,
+							timeStamp = 'hh:mm:ss.ms';
+						
+						if (its) {
+							var d = new Date();
+							timeStamp = timeStamp.replace(/hh/, (d.getHours() < 10 ? '0' : '') + d.getHours());
+							timeStamp = timeStamp.replace(/mm/, (d.getMinutes() < 10 ? '0' : '') + d.getMinutes());
+							timeStamp = timeStamp.replace(/ss/, (d.getSeconds() < 10 ? '0' : '') + d.getSeconds());
+							timeStamp = timeStamp.replace(/ms/, (d.getMilliseconds() < 10 ? '0' : '') + d.getMilliseconds());
+						}
+						
+						if (debug.msgs.indexOf(msgJson) == -1) {
+							var msgJson = JSON.stringify(arguments);
+							debug.msgs.push(msgJson);
+							console.log("}"+new Array(25).join('-')+new Array(25).join('=')+"{>D+E+B+U+G [open] <}"+new Array(25).join('=')+new Array(25).join('-')+"{");
+							for (var i=0;i<arguments.length;i++) {
+								var pre = (its ? '['+timeStamp+']' : '') + (i < 10 ? '0' + i : i) + ":\t";
+								console.log(pre, arguments[i]);
+							}
+							console.log("}"+new Array(25).join('-')+new Array(25).join('=')+"{>D+E+B+U+G [close] <}"+new Array(25).join('=')+new Array(25).join('-')+"{");
+						}
+					}
+				}
+				catch (err) { console.log(err); }
+			}
+			
+			debug.includeTimeStamp = true;
+			if (localStorage['ssIncTimeStamp'] && typeof JSON.parse(localStorage['ssIncTimeStamp']) === "boolean")
+				debug.includeTimeStamp = JSON.parse(localStorage['ssIncTimeStamp']);
+			
+			debug.msgs = [];
+			
+			debug["error"] = function() {
+				var err = arguments[0],
+					args = Array.prototype.slice.call(arguments, 1);
+				if (args.length) {
+					args.unshift("\t-\t=\t{{\tERRORINFORMATION\t}}\t=\t-\t");
+					this.apply(this, args);
+				}
+				throw new Error(err);
+			}
+			
+			return debug;
+		})();
+	
 //	numbers, strings, booleans, dates, elements, arrays, objects, null|undefined
 	function smartSort(a, b/* , dir */) {
 		//	immidiate return for emtpy values
+		if ((null == a || void 0 == a) && b !== b) return 1;
+		if ((null == b || void 0 == b) && a !== a) return -1;
 		if (null == a || void 0 == a || a !== a) return 1;
 		if (null == b || void 0 == b || b !== b) return -1;
 		
@@ -31,23 +84,33 @@
 					b = b.valueOf().toLowerCase();
 					return a === b ? 0 : (dir ? (a < b ? -1 : 1) : (a > b ? -1 : 1));
 				case 'object':
-					if (aInstance == bInstance) {
+					if (aInstance == bInstance || /^((HTML)\w+(Element)){2}$/.test(cInstance)) {
 						if (/(date){2}/ig.test(cInstance)) {
 							var aValue = a.valueOf(),
 								bValue = b.valueOf();
 							return aValue === bValue ? 0 : (dir ? (aValue < bValue ? -1 : 1) : (aValue > bValue ? -1 : 1));
 						}
-						else if (/^(HTML)\w+(Element)$/.test(cInstance)) {
+						else if (/^((HTML)\w+(Element)){2}$/.test(cInstance)) {
 							if (a.id && b.id) return a.id === b.id ? 0 : (dir ? (a.id < b.id ? -1 : 1) : (a.id > b.id ? -1 : 1));
-							else if (a.id || b.id) return a.id && !b.id ? 1 : -1;
+							else if (a.id || b.id) return (dir ? a.id && !b.id : !a.id && b.id) ? 1 : -1;
 							if (a.name && b.name) return a.name === b.name ? 0 : (dir ? (a.name < b.name ? -1 : 1) : (a.name > b.name ? -1 : 1));
-							else if (a.name || b.name) return a.name && !b.name ? 1 : -1;
+							else if (a.name || b.name) return (dir ? a.name && !b.name : !a.name && b.name) ? 1 : -1;
 							return a.tagName === b.tagName ? 0 : (dir ? (a.tagName < b.tagName ? -1 : 1) : (a.tagName > b.tagName ? -1 : 1));
 						}
-						/*TODO: else if (window['jQuery'] && a instanceof jQuery) {
-							
-						} */
+						else if (window['jQuery'] && a instanceof jQuery && b instanceof jQuery) {
+							var a0 = a.get(0), b0 = b.get(0);
+							if (a0.id && b0.id) return a0.id === b0.id ? 0 : (dir ? (a0.id < b0.id ? -1 : 1) : (a0.id > b0.id ? -1 : 1));
+							else if (a0.id || b0.id) return (dir ? a0.id && !b0.id : !a0.id && b0.id) ? 1 : -1;
+							if (a0.name && b0.name) return a0.name === b0.name ? 0 : (dir ? (a0.name < b0.name ? -1 : 1) : (a0.name > b0.name ? -1 : 1));
+							else if (a0.name || b0.name) return (dir ? a0.name && !b0.name : !a0.name && b0.name) ? 1 : -1;
+							return a0.tagName === b0.tagName ? 0 : (dir ? (a0.tagName < b0.tagName ? -1 : 1) : (a0.tagName > b0.tagName ? -1 : 1));
+						}
 						else if (/(array){2}/ig.test(cInstance)) {
+							var aKeys = JSON.stringify(Object.keys(a)).replace(/\[|"|\]|,/g, '').toLowerCase(),
+								bKeys = JSON.stringify(Object.keys(b)).replace(/\[|"|\]|,/g, '').toLowerCase();
+							
+							//	falback
+							//	TODO: break this down to further above cause
 							var aFirst = Object.keys(a)[0],
 								bFirst = Object.keys(b)[0];
 							if (aFirst === bFirst) {
@@ -55,19 +118,49 @@
 								bFirst = b[bFirst];
 								if (aFirst === bFirst) return 0;
 								var firstSorted = [aFirst, bFirst].smartSort(dir);
-								return aFirst == firstSorted[0] ? 1 : -1;
+								return aFirst == firstSorted[0] ? -1 : 1;
 							}
 							else return dir ? (aFirst < bFirst ? -1 : 1) : (aFirst > bFirst ? -1 : 1);
 						}
 						else if (/(object){2}/ig.test(cInstance)) {
+							if (window['jQuery']) {
+								if (a instanceof jQuery) return -1;
+								if (b instanceof jQuery) return 1;
+							}
+							
+							var aKeys = JSON.stringify(Object.keys(a)).replace(/\[|"|\]|,/g, '').toLowerCase(),
+								bKeys = JSON.stringify(Object.keys(b)).replace(/\[|"|\]|,/g, '').toLowerCase();
+							
+							if (aKeys !== bKeys) return dir ? (aKeys < bKeys ? -1 : 1) : (aKeys > bKeys ? -1 : 1);
+							else {	//	evaluate based on values
+								var aValues = '', bValues = '';
+								
+								//	try by number values
+								for (var k in a) if (Object.prototype.hasOwnProperty.call(a, k) && /number/.test(typeof a[k])) aValues += a[k];
+								for (var k in b) if (Object.prototype.hasOwnProperty.call(b, k) && /number/.test(typeof b[k])) aValues += b[k];
+								if (aValues && bValues) {
+									aValues = parseFloat(aValues);
+									bValues = parseFloat(bValues);
+									return aValues === bValues ? 0 : (dir ? (aValues < bValues ? -1 : 1) : (aValues > bValues ? -1 : 1));
+								}
+								
+								//	try by string values
+								for (var k in a) if (Object.prototype.hasOwnProperty.call(a, k) && /string/.test(typeof a[k])) aValues += a[k].toLowerCase();
+								for (var k in b) if (Object.prototype.hasOwnProperty.call(b, k) && /string/.test(typeof b[k])) aValues += b[k].toLowerCase();
+								if (aValues && bValues) return aValues === bValues ? 0 : (dir ? (aValues < bValues ? -1 : 1) : (aValues > bValues ? -1 : 1));
+							}
+							
+							//	falback
+							//	TODO: break this down to further above cause
 							var aFirst = Object.keys(a)[0],
 								bFirst = Object.keys(b)[0];
+							
 							if (void 0 != aFirst && aFirst === bFirst) {
 								aFirst = a[aFirst];
 								bFirst = b[bFirst];
 								if (aFirst === bFirst) return 0;
 								var firstSorted = [aFirst, bFirst].smartSort(dir);
-								return aFirst == firstSorted[0] ? 1 : -1;
+								return aFirst == firstSorted[0] ? -1 : 1;
 							}
 							else return dir ? (aFirst < bFirst ? -1 : 1) : (aFirst > bFirst ? -1 : 1);
 						}
@@ -105,7 +198,7 @@
 			else return -1;
 		}
 	}
-		
+	
 	if (Object['defineProperty'] && !Array.prototype['smartSort']) {
 		Object.defineProperty(Array.prototype, 'smartSort', { value: function() {
 			//	first determine if a specific string for a|asc|d|dsc|desc was passed in
@@ -138,4 +231,6 @@
 			return this.sort(smartSort);
 		} });
 	}
+	
+	debug('Array.prototype.smartSort(["asc"|"desc"]) initialized! Enjoy!', [Array.prototype.smartSort]);
 })();
