@@ -6,20 +6,21 @@
 			function debug() {
 				try {
 					if (window['console'] && console['log']) {
-						var its = debug.includeTimeStamp,
-							timeStamp = 'hh:mm:ss.ms';
-						
-						if (its) {
-							var d = new Date();
-							timeStamp = timeStamp.replace(/hh/, (d.getHours() < 10 ? '0' : '') + d.getHours());
-							timeStamp = timeStamp.replace(/mm/, (d.getMinutes() < 10 ? '0' : '') + d.getMinutes());
-							timeStamp = timeStamp.replace(/ss/, (d.getSeconds() < 10 ? '0' : '') + d.getSeconds());
-							timeStamp = timeStamp.replace(/ms/, (d.getMilliseconds() < 10 ? '0' : '') + d.getMilliseconds());
-						}
-						
+						var msgJson = JSON.stringify(arguments);
 						if (debug.msgs.indexOf(msgJson) == -1) {
-							var msgJson = JSON.stringify(arguments);
 							debug.msgs.push(msgJson);
+							
+							var its = debug.includeTimeStamp,
+								timeStamp = 'hh:mm:ss.ms';
+							
+							if (its) {
+								var d = new Date();
+								timeStamp = timeStamp.replace(/hh/, (d.getHours() < 10 ? '0' : '') + d.getHours());
+								timeStamp = timeStamp.replace(/mm/, (d.getMinutes() < 10 ? '0' : '') + d.getMinutes());
+								timeStamp = timeStamp.replace(/ss/, (d.getSeconds() < 10 ? '0' : '') + d.getSeconds());
+								timeStamp = timeStamp.replace(/ms/, (d.getMilliseconds() < 10 ? '0' : '') + d.getMilliseconds());
+							}
+							
 							console.log("}"+new Array(25).join('-')+new Array(25).join('=')+"{>D+E+B+U+G [open] <}"+new Array(25).join('=')+new Array(25).join('-')+"{");
 							for (var i=0;i<arguments.length;i++) {
 								var pre = (its ? '['+timeStamp+']' : '') + (i < 10 ? '0' + i : i) + ":\t";
@@ -199,38 +200,54 @@
 		}
 	}
 	
+	function smartSortInit() {
+		dir = void 0;
+		
+		//	first determine if a specific string for a|asc|d|dsc|desc was passed in
+		for (var x in arguments) {
+			if (typeof arguments[x] == 'string' && /^a([sc]{2})?$|^d([e]?[sc]{2,3})?$/i.test(arguments[x])) {
+				dir = /^a([sc]{2})?$/i.test(arguments[x]) ? true : false;
+				delete arguments[x];
+				break;
+			}
+			else if (typeof arguments[x] == 'boolean') {
+				dir = arguments[x];
+				delete arguments[x];
+				break;
+			}
+		}
+		
+		//	if direction still not set, then set to true/asc
+		if (void 0 == dir) dir = true;
+		
+		Object.defineProperty(this, "direction", {
+			enumerable: false,
+			value: dir,
+			writable: true
+		});
+		
+		debug('DIRECTION', dir);
+		
+		return this.sort(smartSort);
+	}
+	
 	if (Object['defineProperty'] && !Array.prototype['smartSort']) {
-		Object.defineProperty(Array.prototype, 'smartSort', { value: function() {
-			//	first determine if a specific string for a|asc|d|dsc|desc was passed in
-			for (var x in arguments) {
-				if (typeof arguments[x] == 'string' && /^a([sc]{2})?$|^d([e]?[sc]{2,3})?$/i.test(arguments[x])) {
-					dir = /^a([sc]{2})?$/i.test(arguments[x]) ? true : false;
-					delete arguments[x];
-					break;
-				}
-			}
-			
-			//	add extra arguments to current array for sorting
-			/* var arr = this;
-			for (var x in arguments) {
-				//	check if direction is set yet, if current item is boolean
-				//	if not yet set, set it to first found given boolean
-				if (typeof arguments[x] == 'boolean' && void 0 == dir) dir = arguments[x];
-				else arr.push(arguments[x]);
-			}
-			return arr.sort(function(a, b) { return smartSort(a, b, dir); }); */
-			
-			//	if direction still not set, then set to true/asc
-			if (void 0 == dir) dir = true;
-			
-			Object.defineProperty(this, "direction", {
-				enumerable: false,
-				value: dir,
-				writable: true
-			});
-			return this.sort(smartSort);
-		} });
+		Object.defineProperty(Array.prototype, 'smartSort', { value: smartSortInit });
 	}
 	
 	debug('Array.prototype.smartSort(["asc"|"desc"]) initialized! Enjoy!', [Array.prototype.smartSort]);
+	
+	//	add to jQuery if available
+	if (window['jQuery']) {
+		jQuery.smartSort = function() {
+			dir = void 0;
+			var args = [], arr;
+			jQuery.each(arguments, function(i,v) {
+				if (!arr && typeof v == 'object' && v instanceof Array) arr = v;
+				else args.push(v);
+			});
+			if (arr) return smartSortInit.apply(arr, args);
+			return void 0;
+		}
+	}
 })();
