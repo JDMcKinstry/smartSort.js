@@ -235,7 +235,7 @@
 		Object.defineProperty(Array.prototype, 'smartSort', { value: smartSortInit });
 	}
 	
-	debug('Array.prototype.smartSort(["asc"|"desc"]) initialized! Enjoy!', [Array.prototype.smartSort]);
+	// debug('Array.prototype.smartSort(["asc"|"desc"]) initialized! Enjoy!', [Array.prototype.smartSort]);
 	
 	//	add to jQuery if available
 	if (window['jQuery']) {
@@ -246,7 +246,10 @@
 				if (!arr && typeof v == 'object' && v instanceof Array) arr = v;
 				else args.push(v);
 			});
-			if (arr) return smartSortInit.apply(arr, args);
+			//	DOES NOT CHANGE ORIGINAL ARRAY	
+			//	This is so the user can simply use jQuery to GET a sorted array without manipulating original,
+			//	since the original will already have option of array.smartSort
+			if (arr) return smartSortInit.apply($.extend(true, [], arr), args);
 			return void 0;
 		}
 	}
