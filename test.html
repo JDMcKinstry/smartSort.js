@@ -258,7 +258,7 @@
 	return  Array.smartSort;
 })();
 
-window.t = [4,3,true,1,"bcd","abc",false,"cde",{"obj":"this"},["bbb","ppp"["zulu",['g','a','z','o'],"beta"],"cba"],function(){var d=document.createElement('div');d.id='bob';return d;}(),function(){var d=document.createElement('div');d.id='bill';return d;}(),["cba","def","bca"],{"a":"o","b":['g','a','z','o'],"c":"y"},{"a":"z","b":"y","x":"v"},true,["array","this"],document.createElement('div'),false,new Date("2016-04-07T16:15:19.116Z"),parseFloat(''),document.createElement('fieldset'),void 0,"one",document.createElement('ul'),null,$('<span/>'),"two",null,2,$('<div/>',{id:'Thing'}),$('<div />'),4,$('<header/>'),function(){var d=document.createElement('a');d.id='alpha';return d;}(),new Date("2011-01-01T05:00:00.000Z"),"three",function(){var d=document.createElement('a');d.id='zulu';return d;}(),undefined,["one","three","four"],document.createElement('span'),new Date("2010-03-20T04:00:00.000Z"),document.createElement('a'),["one","three","five"],function(){var d=document.createElement('span');d.id='bbKing';return d;}(),{"a":"a","b":"b"},{"name":"bob","value":"bill"},new Date("2008-04-07T16:15:19.116Z"),{"john":"jill","jack":"june"},["abc","def",["abc","def","cba"],["cba","def","bca"],"cba"],["cba","def","bca"],{"a":"a","b":"b","c":"c"},{"a":"a","b":"b","c":"d"},new Date("2005-01-12T05:00:00.000Z")];
+window.t = [4,3,true,1,"bcd","abc",false,"cde",{"obj":"this"},["bbb","ppp",["zulu",['g','a','z','o'],"beta"],"cba"],function(){var d=document.createElement('div');d.id='bob';return d;}(),function(){var d=document.createElement('div');d.id='bill';return d;}(),["cba","def","bca"],{"a":"o","b":['g','a','z','o'],"c":"y"},{"a":"z","b":"y","x":"v"},['a','c',['l','g','z'], 'y','b'],true,["array","this"],document.createElement('div'),false,new Date("2016-04-07T16:15:19.116Z"),parseFloat(''),document.createElement('fieldset'),void 0,"one",document.createElement('ul'),null,$('<span/>'),"two",null,2,$('<div/>',{id:'Thing'}),$('<div />'),4,$('<header/>'),function(){var d=document.createElement('a');d.id='alpha';return d;}(),new Date("2011-01-01T05:00:00.000Z"),"three",function(){var d=document.createElement('a');d.id='zulu';return d;}(),undefined,["one","three","four"],document.createElement('span'),new Date("2010-03-20T04:00:00.000Z"),document.createElement('a'),["one","three","five"],function(){var d=document.createElement('span');d.id='bbKing';return d;}(),{"a":"a","b":"b"},{"name":"bob","value":"bill"},new Date("2008-04-07T16:15:19.116Z"),{"john":"jill","jack":"june"},["abc","def",["abc","def","cba"],["cba","def","bca"],"cba"],["cba","def","bca"],{"a":"a","b":"b","c":"c"},{"a":"a","b":"b","c":"d"},new Date("2005-01-12T05:00:00.000Z")];
 
 var tAsc, tDesc, jQTAsc, jQTDesc;
 
@@ -307,8 +307,6 @@ $(function() {
 	jQTDesc = $.smartSort($.extend(true, [], t), 'd');
 	display(jQTDesc, $('#jQDesc'));
 	display(jQTDesc, $('#compDescR'));
-	
-	
 })
 </script><head><body>
 <table><thead><tr><th>ASC</th><th>DESC</th></tr></thead><tbody><tr><td><ul id="asc"></ul></td><td><ul id="desc"></ul></td></tr><tr><td><ul id="jQAsc"></ul></td><td><ul id="jQDesc"></ul></td></tr><tr><th>Compare Regular ASC</th><th>Compare jQuery ASC</th></tr><tr><td><ul id="compAscL"></ul></td><td><ul id="compAscR"></ul></td></tr><tr><th>Compare Regular DESC</th><th>Compare jQuery DESC</th></tr><tr><td><ul id="compDescL"></ul></td><td><ul id="compDescR"></ul></td></tr></tbody></table>
