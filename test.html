@@ -1,57 +1,53 @@
 <html><head><script type="text/javascript" src="https://code.jquery.com/jquery-1.9.1.js"></script>
 <style>table{border-collapse:collapse;width:100%;margin:0 auto;}th,td:first-child{border-right:1px solid;}td{border-bottom:1px solid;}</style>
 <script type="text/javascript">
-;;(function() {
-	var debug = new (function ssDebug() {
-			function debug() {
-				try {
-					if (window['console'] && console['log']) {
-						var msgJson = JSON.stringify(arguments);
-						if (debug.msgs.indexOf(msgJson) == -1) {
-							debug.msgs.push(msgJson);
-							
-							var its = debug.includeTimeStamp,
-								timeStamp = 'hh:mm:ss.ms';
-							
-							if (its) {
-								var d = new Date();
-								timeStamp = timeStamp.replace(/hh/, (d.getHours() < 10 ? '0' : '') + d.getHours());
-								timeStamp = timeStamp.replace(/mm/, (d.getMinutes() < 10 ? '0' : '') + d.getMinutes());
-								timeStamp = timeStamp.replace(/ss/, (d.getSeconds() < 10 ? '0' : '') + d.getSeconds());
-								timeStamp = timeStamp.replace(/ms/, (d.getMilliseconds() < 10 ? '0' : '') + d.getMilliseconds());
-							}
-							
-							console.log("}"+new Array(25).join('-')+new Array(25).join('=')+"{>D+E+B+U+G [open] <}"+new Array(25).join('=')+new Array(25).join('-')+"{");
-							for (var i=0;i<arguments.length;i++) {
-								var pre = (its ? '['+timeStamp+']' : '') + (i < 10 ? '0' + i : i) + ":\t";
-								console.log(pre, arguments[i]);
-							}
-							console.log("}"+new Array(25).join('-')+new Array(25).join('=')+"{>D+E+B+U+G [close] <}"+new Array(25).join('=')+new Array(25).join('-')+"{");
+var debug = new (function ssDebug() {
+		function debug() {
+			try {
+				if (window['console'] && console['log']) {
+					var msgJson = JSON.stringify(arguments);
+					if (debug.msgs.indexOf(msgJson) == -1) {
+						debug.msgs.push(msgJson);
+						
+						var its = debug.includeTimeStamp,
+							timeStamp = 'hh:mm:ss.ms';
+						
+						if (its) {
+							var d = new Date();
+							timeStamp = timeStamp.replace(/hh/, (d.getHours() < 10 ? '0' : '') + d.getHours());
+							timeStamp = timeStamp.replace(/mm/, (d.getMinutes() < 10 ? '0' : '') + d.getMinutes());
+							timeStamp = timeStamp.replace(/ss/, (d.getSeconds() < 10 ? '0' : '') + d.getSeconds());
+							timeStamp = timeStamp.replace(/ms/, (d.getMilliseconds() < 10 ? '0' : '') + d.getMilliseconds());
 						}
+						
+						console.log("}"+new Array(25).join('-')+new Array(25).join('=')+"{>D+E+B+U+G [open] <}"+new Array(25).join('=')+new Array(25).join('-')+"{");
+						for (var i=0;i<arguments.length;i++) {
+							var pre = (its ? '['+timeStamp+']' : '') + (i < 10 ? '0' + i : i) + ":\t";
+							console.log(pre, arguments[i]);
+						}
+						console.log("}"+new Array(25).join('-')+new Array(25).join('=')+"{>D+E+B+U+G [close] <}"+new Array(25).join('=')+new Array(25).join('-')+"{");
 					}
 				}
-				catch (err) { console.log(err); }
 			}
-			
-			debug.includeTimeStamp = true;
-			if (localStorage['ssIncTimeStamp'] && typeof JSON.parse(localStorage['ssIncTimeStamp']) === "boolean")
-				debug.includeTimeStamp = JSON.parse(localStorage['ssIncTimeStamp']);
-			
-			debug.msgs = [];
-			
-			debug["error"] = function() {
-				var err = arguments[0],
-					args = Array.prototype.slice.call(arguments, 1);
-				if (args.length) {
-					args.unshift("\t-\t=\t{{\tERRORINFORMATION\t}}\t=\t-\t");
-					this.apply(this, args);
-				}
-				throw new Error(err);
+			catch (err) { console.log(err); }
+		}
+		debug.includeTimeStamp = true;
+		if (localStorage['ssIncTimeStamp'] && typeof JSON.parse(localStorage['ssIncTimeStamp']) === "boolean")
+			debug.includeTimeStamp = JSON.parse(localStorage['ssIncTimeStamp']);
+		debug.msgs = [];
+		debug["error"] = function() {
+			var err = arguments[0],
+				args = Array.prototype.slice.call(arguments, 1);
+			if (args.length) {
+				args.unshift("\t-\t=\t{{\tERRORINFORMATION\t}}\t=\t-\t");
+				this.apply(this, args);
 			}
-			
-			return debug;
-		})();
-	
+			throw new Error(err);
+		}
+		return debug;
+	})();
+
+(function() {
 	function smartSort() {
 		var $this = this,
 			dir = void 0;
@@ -146,7 +142,7 @@
 										firstSorted = arrFirst.smartSort(dir); // smartSortInit.apply(arrFirst, [dir]);
 									return aFirst == firstSorted[0] ? -1 : 1;
 								}
-								else return dir ? (aFirst < bFirst ? -1 : 1) : (aFirst > bFirst ? -1 : 1);
+								return dir ? (aFirst < bFirst ? -1 : 1) : (aFirst > bFirst ? -1 : 1);
 							}
 							else if (/(object){2}/ig.test(cInstance)) {
 								if (window['jQuery']) {
@@ -155,8 +151,21 @@
 								}
 								
 								//	sort inner arrays if found
-								/* for (var x in a) if (a[x] instanceof Array) a[x].smartSort(dir);
-								for (var x in b) if (b[x] instanceof Array) b[x].smartSort(dir); */
+								for (var k in a) if (a[k] instanceof Array) a[k].smartSort(dir);
+								for (var k in b) if (b[k] instanceof Array) b[k].smartSort(dir);
+								
+								//	sort object
+								var objA = [], objB = [];
+								
+								for (var k in a) { if (a.hasOwnProperty(k)) objA[k] = a[k], delete a[k]; }
+								for (var k in b) { if (b.hasOwnProperty(k)) objB[k] = b[k], delete b[k]; }
+								if (dir == false) 
+								
+								objA.smartSort(dir);
+								objB.smartSort(dir);
+								
+								for (var k in objA) a[k] = objA[k];
+								for (var k in objB) b[k] = objB[k];
 								
 								var aKeys = JSON.stringify(Object.keys(a)).replace(/\[|"|\]|,/g, '').toLowerCase(),
 									bKeys = JSON.stringify(Object.keys(b)).replace(/\[|"|\]|,/g, '').toLowerCase();
@@ -192,19 +201,19 @@
 									var firstSorted = [aFirst, bFirst].smartSort(dir);
 									return aFirst == firstSorted[0] ? -1 : 1;
 								}
-								else return dir ? (aFirst < bFirst ? -1 : 1) : (aFirst > bFirst ? -1 : 1);
+								return dir ? (aFirst < bFirst ? -1 : 1) : (aFirst > bFirst ? -1 : 1);
 							}
 							
 						}
-						else {	//	Organize as [DATE, ELEMENT, ARRAY, OBJECT, NAN|NULL|UNDEFINED]
-							if (/Date/ig.test(cInstance)) return /Date/ig.test(aInstance) ? -1 : 1;
-							if (/Element/ig.test(cInstance)) return /Element/ig.test(aInstance) ? -1 : 1;
-							//	quick jQuery check to organize jQuery elements right behind standard elements
-							if (window['jQuery'] && (a instanceof jQuery || b instanceof jQuery)) return a instanceof jQuery ? -1 : 1;
-							if (/Array/ig.test(cInstance)) return /Array/ig.test(aInstance) ? -1 : 1;
-							return /object/ig.test(aInstance) ? -1 : 1;
-						}
-						
+						//	Organize as [DATE, ELEMENT, ARRAY, OBJECT, NAN|NULL|UNDEFINED]
+						if (/Date/ig.test(cInstance)) return /Date/ig.test(aInstance) ? -1 : 1;
+						if (/Element/ig.test(cInstance)) return /Element/ig.test(aInstance) ? -1 : 1;
+						//	quick jQuery check to organize jQuery elements right behind standard elements
+						if (window['jQuery'] && (a instanceof jQuery || b instanceof jQuery)) return a instanceof jQuery ? -1 : 1;
+						if (/Array/ig.test(cInstance)) return /Array/ig.test(aInstance) ? -1 : 1;
+						aInstance = aInstance.toLowerCase();
+						bInstance = bInstance.toLowerCase();
+						return aInstance === bInstance ? 0 : (dir ? (aInstance < bInstance ? -1 : 1) : (aInstance > bInstance ? -1 : 1));
 						break;
 				}
 			}
@@ -229,7 +238,7 @@
 			}
 		}
 		
-		ss.dir = dir;
+		// ss.dir = dir;
 		/* console.log(dir); */
 		return this.sort(function(a,b){return ss(a,b,$this.dir)});
 	}
@@ -258,55 +267,54 @@
 	return  Array.smartSort;
 })();
 
-window.t = [4,3,true,1,"bcd","abc",false,"cde",{"obj":"this"},["bbb","ppp",["zulu",['g','a','z','o'],"beta"],"cba"],function(){var d=document.createElement('div');d.id='bob';return d;}(),function(){var d=document.createElement('div');d.id='bill';return d;}(),["cba","def","bca"],{"a":"o","b":['g','a','z','o'],"c":"y"},{"a":"z","b":"y","x":"v"},['a','c',['l','g','z'], 'y','b'],true,["array","this"],document.createElement('div'),false,new Date("2016-04-07T16:15:19.116Z"),parseFloat(''),document.createElement('fieldset'),void 0,"one",document.createElement('ul'),null,$('<span/>'),"two",null,2,$('<div/>',{id:'Thing'}),$('<div />'),4,$('<header/>'),function(){var d=document.createElement('a');d.id='alpha';return d;}(),new Date("2011-01-01T05:00:00.000Z"),"three",function(){var d=document.createElement('a');d.id='zulu';return d;}(),undefined,["one","three","four"],document.createElement('span'),new Date("2010-03-20T04:00:00.000Z"),document.createElement('a'),["one","three","five"],function(){var d=document.createElement('span');d.id='bbKing';return d;}(),{"a":"a","b":"b"},{"name":"bob","value":"bill"},new Date("2008-04-07T16:15:19.116Z"),{"john":"jill","jack":"june"},["abc","def",["abc","def","cba"],["cba","def","bca"],"cba"],["cba","def","bca"],{"a":"a","b":"b","c":"c"},{"a":"a","b":"b","c":"d"},new Date("2005-01-12T05:00:00.000Z")];
+window.t = [4,3,true,1,"bcd","abc",false,{d:9,2:'y',b:5,1:'x',a:0,3:'a'},"cde",{"obj":"this"},["bbb","ppp",["zulu",['g','a','z','o'],"beta"],"cba"],function(){var d=document.createElement('div');d.id='bob';return d;}(),function(){var d=document.createElement('div');d.id='bill';return d;}(),["cba","def","bca"],{"a":"o","b":['g','a','z','o'],"c":"y"},{"a":"z","b":"y","x":"v"},['a','c',['l','g','z'], 'y','b'],true,["array","this"],document.createElement('div'),false,new Date("2016-04-07T16:15:19.116Z"),parseFloat(''),document.createElement('fieldset'),void 0,"one",document.createElement('ul'),null,$('<span/>'),"two",null,2,$('<div/>',{id:'Thing'}),$('<div />'),4,$('<header/>'),function(){var d=document.createElement('a');d.id='alpha';return d;}(),new Date("2011-01-01T05:00:00.000Z"),"three",function(){var d=document.createElement('a');d.id='zulu';return d;}(),undefined,["one","three","four"],document.createElement('span'),new Date("2010-03-20T04:00:00.000Z"),document.createElement('a'),["one","three","five"],function(){var d=document.createElement('span');d.id='bbKing';return d;}(),{"a":"a","b":"b"},{"name":"bob","value":"bill"},new Date("2008-04-07T16:15:19.116Z"),{"john":"jill","jack":"june"},["abc","def",["abc","def","cba"],["cba","def","bca"],"cba"],["cba","def","bca"],{"a":"a","b":"b","c":"c"},{"a":"a","b":"b","c":"d"},new Date("2005-01-12T05:00:00.000Z")];
 
-var tAsc, tDesc, jQTAsc, jQTDesc;
+// var tAsc, tDesc, jQTAsc, jQTDesc;
 
-if (window['console'] && console['log']) {
-	console.log("ASC:\t", [tAsc, JSON.stringify(tAsc)]);
-	console.log(new Array(100).join('='));
-	console.log("DESC:\t", [tDesc, JSON.stringify(tDesc)]);
+function display(arr, $ele) {
+	if (typeof arr == 'string') arr = JSON.parse(arr);
+	for (var x in arr) {
+		var arrX = arr[x],
+			txt = '['+x+']: ',
+			li = $('<li />');
+		if (/number/ig.test(typeof arrX)) txt += arrX.toString();
+		else if (/string/ig.test(typeof arrX)) txt += '"'+arrX.toString()+'"';
+		else if (arrX == null) txt += '<i>null</i>';
+		else if (arrX == undefined) txt += '<i>undefined</i>';
+		else if (/object/ig.test(typeof arrX)) {
+			if (arrX instanceof Array) txt += 'Array '+JSON.stringify(arrX).replace(/\[/g, '[ ').replace(/,/g, ', ').replace(/\]/g, ' ]');
+			else if (arrX instanceof Date) txt += 'Date('+arrX.toString()+')';
+			else if (arrX instanceof Element) txt += "Element(\t"+arrX.tagName+"["+arrX.id+"]("+arrX.className+")\t"+arrX.toString()+')';
+			else if (arrX instanceof jQuery) txt += "jQuery\tElement(\t"+arrX[0].tagName+"["+arrX[0].id+"]("+arrX[0].className+")\t"+arrX[0].toString()+')';
+			else txt += 'Object ( '+JSON.stringify(arrX).replace(/\{/g, '{ ').replace(/\[/g, '[ ').replace(/:/g, ': ').replace(/,/g, ', ').replace(/\]/g, ' ]').replace(/\}/g, ' }')+' )';
+			// else txt += 'Object ( '+Object.keys(arrX)+' )';
+		}
+		else  txt += typeof arrX + ' "'+arrX.toString()+'"';
+		$ele.append(li.html(txt));
+	}
 }
 
 $(function() {
-	function display(arr, $ele) {
-		if (typeof arr == 'string') arr = JSON.parse(arr);
-		for (var x in arr) {
-			var arrX = arr[x],
-				txt = '['+x+']: ',
-				li = $('<li />');
-			if (/number/ig.test(typeof arrX)) txt += arrX.toString();
-			else if (/string/ig.test(typeof arrX)) txt += '"'+arrX.toString()+'"';
-			else if (arrX == null) txt += '<i>null</i>';
-			else if (arrX == undefined) txt += '<i>undefined</i>';
-			else if (/object/ig.test(typeof arrX)) {
-				if (arrX instanceof Array) txt += 'Array [ '+JSON.stringify(arrX)+' ]';
-				else if (arrX instanceof Date) txt += 'Date('+arrX.toString()+')';
-				else if (arrX instanceof Element) txt += "Element(\t"+arrX.tagName+"["+arrX.id+"]("+arrX.className+")\t"+arrX.toString()+')';
-				else if (arrX instanceof jQuery) txt += "jQuery\tElement(\t"+arrX[0].tagName+"["+arrX[0].id+"]("+arrX[0].className+")\t"+arrX[0].toString()+')';
-				else txt += 'Object ( '+JSON.stringify(arrX)+' )';
-				// else txt += 'Object ( '+Object.keys(arrX)+' )';
-			}
-			else  txt += typeof arrX + ' "'+arrX.toString()+'"';
-			$ele.append(li.html(txt));
-		}
-	}
+	var tAsc = $.extend(true, [], t).smartSort()
+		, tDesc = $.extend(true, [], t).smartSort('d')
+		, jQTAsc = $.smartSort(t)
+		, jQTDesc = $.smartSort(t, 'd');
 	
-	tAsc = $.extend(true, [], t).smartSort();
 	display(tAsc, $('#asc'));
 	display(tAsc, $('#compAscL'));
 	
-	jQTAsc = $.smartSort($.extend(true, [], t));
 	display(jQTAsc, $('#jQAsc'));
 	display(jQTAsc, $('#compAscR'));
 	
-	tDesc = $.extend(true, [], t).smartSort('d')
 	display(tDesc, $('#desc'));
 	display(tDesc, $('#compDescL'));
 	
-	jQTDesc = $.smartSort($.extend(true, [], t), 'd');
 	display(jQTDesc, $('#jQDesc'));
 	display(jQTDesc, $('#compDescR'));
+	
+	debug("array sorted ASC [34]", JSON.stringify(tAsc[34]), "array sorted DESC [34]", JSON.stringify(tDesc[34]));
+	debug("array sorted ASC [45]", JSON.stringify(tAsc[45]), "array sorted DESC [46]", JSON.stringify(tDesc[46]));
+	debug({ original: t, regAsc: tAsc, regDesc: tDesc, jQAsc: jQTAsc, jQDesc: jQTDesc });
 })
 </script><head><body>
 <table><thead><tr><th>ASC</th><th>DESC</th></tr></thead><tbody><tr><td><ul id="asc"></ul></td><td><ul id="desc"></ul></td></tr><tr><td><ul id="jQAsc"></ul></td><td><ul id="jQDesc"></ul></td></tr><tr><th>Compare Regular ASC</th><th>Compare jQuery ASC</th></tr><tr><td><ul id="compAscL"></ul></td><td><ul id="compAscR"></ul></td></tr><tr><th>Compare Regular DESC</th><th>Compare jQuery DESC</th></tr><tr><td><ul id="compDescL"></ul></td><td><ul id="compDescR"></ul></td></tr></tbody></table>
