@@ -1,54 +1,4 @@
 ;;(function() {
-	var debug = new (function ssDebug() {
-			function debug() {
-				try {
-					if (window['console'] && console['log']) {
-						var msgJson = JSON.stringify(arguments);
-						if (debug.msgs.indexOf(msgJson) == -1) {
-							debug.msgs.push(msgJson);
-							
-							var its = debug.includeTimeStamp,
-								timeStamp = 'hh:mm:ss.ms';
-							
-							if (its) {
-								var d = new Date();
-								timeStamp = timeStamp.replace(/hh/, (d.getHours() < 10 ? '0' : '') + d.getHours());
-								timeStamp = timeStamp.replace(/mm/, (d.getMinutes() < 10 ? '0' : '') + d.getMinutes());
-								timeStamp = timeStamp.replace(/ss/, (d.getSeconds() < 10 ? '0' : '') + d.getSeconds());
-								timeStamp = timeStamp.replace(/ms/, (d.getMilliseconds() < 10 ? '0' : '') + d.getMilliseconds());
-							}
-							
-							console.log("}"+new Array(25).join('-')+new Array(25).join('=')+"{>D+E+B+U+G [open] <}"+new Array(25).join('=')+new Array(25).join('-')+"{");
-							for (var i=0;i<arguments.length;i++) {
-								var pre = (its ? '['+timeStamp+']' : '') + (i < 10 ? '0' + i : i) + ":\t";
-								console.log(pre, arguments[i]);
-							}
-							console.log("}"+new Array(25).join('-')+new Array(25).join('=')+"{>D+E+B+U+G [close] <}"+new Array(25).join('=')+new Array(25).join('-')+"{");
-						}
-					}
-				}
-				catch (err) { console.log(err); }
-			}
-			
-			debug.includeTimeStamp = true;
-			if (localStorage['ssIncTimeStamp'] && typeof JSON.parse(localStorage['ssIncTimeStamp']) === "boolean")
-				debug.includeTimeStamp = JSON.parse(localStorage['ssIncTimeStamp']);
-			
-			debug.msgs = [];
-			
-			debug["error"] = function() {
-				var err = arguments[0],
-					args = Array.prototype.slice.call(arguments, 1);
-				if (args.length) {
-					args.unshift("\t-\t=\t{{\tERRORINFORMATION\t}}\t=\t-\t");
-					this.apply(this, args);
-				}
-				throw new Error(err);
-			}
-			
-			return debug;
-		})();
-	
 	function smartSort() {
 		var $this = this,
 			dir = void 0;
@@ -143,7 +93,7 @@
 										firstSorted = arrFirst.smartSort(dir); // smartSortInit.apply(arrFirst, [dir]);
 									return aFirst == firstSorted[0] ? -1 : 1;
 								}
-								else return dir ? (aFirst < bFirst ? -1 : 1) : (aFirst > bFirst ? -1 : 1);
+								return dir ? (aFirst < bFirst ? -1 : 1) : (aFirst > bFirst ? -1 : 1);
 							}
 							else if (/(object){2}/ig.test(cInstance)) {
 								if (window['jQuery']) {
@@ -152,8 +102,21 @@
 								}
 								
 								//	sort inner arrays if found
-								/* for (var x in a) if (a[x] instanceof Array) a[x].smartSort(dir);
-								for (var x in b) if (b[x] instanceof Array) b[x].smartSort(dir); */
+								for (var k in a) if (a[k] instanceof Array) a[k].smartSort(dir);
+								for (var k in b) if (b[k] instanceof Array) b[k].smartSort(dir);
+								
+								//	sort object
+								var objA = [], objB = [];
+								
+								for (var k in a) { if (a.hasOwnProperty(k)) objA[k] = a[k], delete a[k]; }
+								for (var k in b) { if (b.hasOwnProperty(k)) objB[k] = b[k], delete b[k]; }
+								if (dir == false) 
+								
+								objA.smartSort(dir);
+								objB.smartSort(dir);
+								
+								for (var k in objA) a[k] = objA[k];
+								for (var k in objB) b[k] = objB[k];
 								
 								var aKeys = JSON.stringify(Object.keys(a)).replace(/\[|"|\]|,/g, '').toLowerCase(),
 									bKeys = JSON.stringify(Object.keys(b)).replace(/\[|"|\]|,/g, '').toLowerCase();
@@ -189,19 +152,19 @@
 									var firstSorted = [aFirst, bFirst].smartSort(dir);
 									return aFirst == firstSorted[0] ? -1 : 1;
 								}
-								else return dir ? (aFirst < bFirst ? -1 : 1) : (aFirst > bFirst ? -1 : 1);
+								return dir ? (aFirst < bFirst ? -1 : 1) : (aFirst > bFirst ? -1 : 1);
 							}
 							
 						}
-						else {	//	Organize as [DATE, ELEMENT, ARRAY, OBJECT, NAN|NULL|UNDEFINED]
-							if (/Date/ig.test(cInstance)) return /Date/ig.test(aInstance) ? -1 : 1;
-							if (/Element/ig.test(cInstance)) return /Element/ig.test(aInstance) ? -1 : 1;
-							//	quick jQuery check to organize jQuery elements right behind standard elements
-							if (window['jQuery'] && (a instanceof jQuery || b instanceof jQuery)) return a instanceof jQuery ? -1 : 1;
-							if (/Array/ig.test(cInstance)) return /Array/ig.test(aInstance) ? -1 : 1;
-							return /object/ig.test(aInstance) ? -1 : 1;
-						}
-						
+						//	Organize as [DATE, ELEMENT, ARRAY, OBJECT, NAN|NULL|UNDEFINED]
+						if (/Date/ig.test(cInstance)) return /Date/ig.test(aInstance) ? -1 : 1;
+						if (/Element/ig.test(cInstance)) return /Element/ig.test(aInstance) ? -1 : 1;
+						//	quick jQuery check to organize jQuery elements right behind standard elements
+						if (window['jQuery'] && (a instanceof jQuery || b instanceof jQuery)) return a instanceof jQuery ? -1 : 1;
+						if (/Array/ig.test(cInstance)) return /Array/ig.test(aInstance) ? -1 : 1;
+						aInstance = aInstance.toLowerCase();
+						bInstance = bInstance.toLowerCase();
+						return aInstance === bInstance ? 0 : (dir ? (aInstance < bInstance ? -1 : 1) : (aInstance > bInstance ? -1 : 1));
 						break;
 				}
 			}
@@ -226,7 +189,7 @@
 			}
 		}
 		
-		ss.dir = dir;
+		// ss.dir = dir;
 		/* console.log(dir); */
 		return this.sort(function(a,b){return ss(a,b,$this.dir)});
 	}
